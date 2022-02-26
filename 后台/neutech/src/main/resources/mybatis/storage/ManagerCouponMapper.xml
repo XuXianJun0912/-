@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace= "com.ruoyi.project.storage.mapper.ManagerCouponMapper">
+
+    <insert id="saveCoupon" parameterType="com.ruoyi.project.storage.domain.CouponVo">
+        INSERT INTO t_coupon
+        (
+          `user_id`, `way`,
+          `points`, `order_id`, `sort_no`,
+          `create_time`, `create_by`, `update_time`,
+          `update_by`, `version`, `del_flag`
+          )
+        VALUES
+            (
+            #{userId}, #{way},
+            #{points}, #{orderId}, null,
+            #{createTime}, #{createBy}, #{createTime},
+            #{createBy}, 0, #{delFlag}
+            )
+    </insert>
+</mapper>

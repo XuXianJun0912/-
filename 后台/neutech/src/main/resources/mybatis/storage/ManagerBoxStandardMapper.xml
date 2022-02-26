@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ruoyi.project.storage.mapper.ManagerBoxStandardMapper">
+
+    <sql id="selectSql">
+        select
+            t.box_standard boxStandard,
+            t.box_unit_price boxUnitPrice,
+            t.create_by createBy,
+            t.create_time createTime,
+            t.version,
+            t.del_flag delFlag,
+            t.id
+        from t_box_standard t
+    </sql>
+
+    <select id="getList" parameterType="java.lang.String" resultType="com.ruoyi.project.storage.domain.BoxStandardVO">
+        select
+            t.box_standard boxStandard,
+            t.box_unit_price boxUnitPrice,
+            t.create_by createBy,
+            t.create_time createTime,
+            t.version,
+            t.update_time updateTime,
+            t.update_by updateBy,
+            t.sort_no sortNo,
+            t.remark,
+            t.del_flag delFlag,
+            t.id,
+            count(t.box_standard) totalNumber,
+            sum(info.is_used) usedNumber,
+            count(t.box_standard) - sum(info.is_used) inventoryNumber,
+            round(sum(info.is_used) / count(t.box_standard),2)*100 useRatio
+--         concat(round(sum(info.is_used) / count(t.box_standard),2)*100,'%') useRatio
+        from t_box_standard t
+        left join t_box_info info on t.box_standard = info.box_standard and info.del_flag = 0
+        where t.del_flag = 0
+        <if test="searchValue != null">
+            and t.box_standard like concat(#{searchValue},'%')
+        </if>
+        group by t.box_standard
+        order by t.id
+    </select>
+
+    <insert id="saveBoxStandard" parameterType="com.ruoyi.project.storage.domain.BoxStandardVO">
+        insert into
+            t_box_standard
+                (
+                box_standard,
+                box_unit_price,
+                sort_no,
+                remark,
+                create_time,
+                update_time,
+                create_by,
+                update_by,
+                version,
+                del_flag
+                )
+        values
+                (
+                #{boxStandard},
+                #{boxUnitPrice},
+                #{sortNo},
+                #{remark},
+                now(),
+                now(),
+                #{createBy},
+                #{updateBy},
+                #{version},
+                #{delFlag}
+                )
+    </insert>
+
+    <delete id="deleteBox">
+        update t_box_standard
+        set del_flag = 2 , update_time = now() , update_by = #{updateBy}
+        where id in (
+            <foreach collection="ids" item="id" separator=",">
+                #{id}
+            </foreach>
+        )
+    </delete>
+
+    <select id="findBoxStandard" parameterType="string" resultType="com.ruoyi.project.storage.domain.BoxStandardVO">
+        <include refid="selectSql"></include>
+        where
+        t.del_flag = 0 and t.box_standard = #{boxStandard}
+    </select>
+</mapper>

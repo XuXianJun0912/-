@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ruoyi.project.storage.mapper.AppMyOrderMapper">
+
+    <sql id="SelectOrder">
+        select
+            t.`id`,
+            t.`user_id` userId,
+            t.`status`,
+            `order_code` orderCode,
+            `order_name` orderName,
+            `empty_box_order_time` emptyBoxOrderTime,
+            `heavy_box_order_time` heavyBoxOrderTime,
+            `empty_box_call_name` emptyBoxCallName,
+            `empty_box_call_phone` emptyBoxCallPhone,
+            `empty_box_call_address` emptyBoxCallAddress,
+            `empty_box_call_time` emptyBoxCallTime,
+            `empty_box_call_interval` emptyBoxCallInterval,
+            `heavy_box_call_name` heavyBoxCallName,
+            `heavy_box_call_phone` heavyBoxCallPhone,
+            `heavy_box_call_address` heavyBoxCallAddress,
+            `heavy_box_call_time` heavyBoxCallTime,
+            `heavy_box_call_interval` heavyBoxCallInterval,
+            `box_id` boxId,
+            `box_code` boxCode,
+            `box_standard` boxStandard,
+            `box_unit_price` boxUnitPrice,
+            `lease_duration` leaseDuration,
+            `total_price` totalPrice,
+            t.`sort_no` sortNo,
+            t.`create_time` createTime,
+            t.`create_by` createBy,
+            t.`update_time` updateTime,
+            t.`update_by` updateBy,
+            t.`version`,
+            t.`del_flag` delFlag,
+            `app_del_flag` appDelFlag,
+            `backend_del_flag` backendDelFlag,
+            u.nick_name nickName
+    </sql>
+
+    <select id="getList" resultType="com.ruoyi.project.storage.domain.BackendOrderVO">
+        <include refid="SelectOrder"></include>
+        from t_order t
+        left join sys_user u
+        on t.user_id = u.user_id
+        and u.del_flag = 0
+        where t.del_flag = 0
+        and t.app_del_flag = 0
+        and t.user_id = #{userId}
+    </select>
+
+    <select id="getOrderInfo" resultType="com.ruoyi.project.storage.domain.BackendOrderVO">
+        <include refid="SelectOrder"></include>
+        from t_order t
+        left join sys_user u
+        on t.user_id = u.user_id
+        and u.del_flag = 0
+        where t.del_flag = 0 and t.id = #{id} and t.user_id = #{userId}
+    </select>
+
+    <update id="updateOrder" parameterType="map">
+        update t_order
+        set status = #{status},
+            version = version+1,
+            update_by = #{updateBy},
+            update_time = now(),
+            heavy_box_order_time = #{heavyBoxOrderTime},
+            heavy_box_call_name = #{heavyBoxCallName},
+            heavy_box_call_phone = #{heavyBoxCallPhone},
+            heavy_box_call_address = #{heavyBoxCallAddress},
+            heavy_box_call_time = #{heavyBoxCallTime},
+            heavy_box_call_interval = #{heavyBoxCallInterval}
+        where id = #{id}
+        and version = #{version}
+
+    </update>
+
+    <delete id="deleteOrder" parameterType="map">
+        update t_order
+        set status = #{status},
+            version = version+1,
+            update_by = #{updateBy},
+            update_time = now(),
+            app_del_flag = #{appDelFlag}
+        where id = #{id}
+        and version = #{version}
+    </delete>
+
+</mapper>

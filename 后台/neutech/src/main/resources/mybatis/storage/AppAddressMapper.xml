@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ruoyi.project.storage.mapper.AppAddressMapper">
+
+    <sql id="selectAddress">
+        select
+            `id`,
+            `user_id` userId,
+            `contacts`,
+            `contacts_phone` contactsPhone,
+            `province`,
+            `province_name` provinceName,
+            `city`,
+            `city_name` cityName,
+            `area`,
+            `area_name` areaName,
+            `address`,
+            `is_default` isDefault,
+            `sort_no` sortNo,
+            `create_time` createTime,
+            `create_by`createBy,
+            `update_time` updateTime,
+            `update_by` updateBy,
+            `version`,
+            `del_flag` delFlag
+        from t_customer_address t
+    </sql>
+
+    <select id="getList" resultType="com.ruoyi.project.storage.domain.AddressVO" parameterType="java.lang.Long">
+        <include refid="selectAddress"></include>
+        where t.del_flag = 0
+        and t.user_id = #{userId}
+        order by t.create_by
+    </select>
+
+    <select id="getAddressDefault" resultType="com.ruoyi.project.storage.domain.AddressVO" parameterType="java.lang.Long">
+        <include refid="selectAddress"></include>
+        where t.del_flag = 0
+        and t.user_id = #{userId}
+        and t.is_default = 0
+    </select>
+
+    <update id="updateNotDefault" parameterType="long">
+        UPDATE t_customer_address
+        SET
+        `is_default` = 1,
+        update_time = now()
+        WHERE `id` = #{id}
+    </update>
+
+    <insert id="createAddress" parameterType="com.ruoyi.project.storage.domain.AddressVO">
+        INSERT INTO t_customer_address (
+            `user_id`,
+            `contacts`,
+            `contacts_phone`,
+            `province`,
+            `province_name`,
+            `city`,
+            `city_name`,
+            `area`,
+            `area_name`,
+            `address`,
+            `is_default`,
+            `sort_no`,
+            `create_time`,
+            `create_by`,
+            `update_time`,
+            `update_by`,
+            `version`,
+            `del_flag`
+            )
+            VALUES
+                (
+                #{userId},
+                #{contacts},
+                #{contactsPhone},
+                NULL,
+                NULL,
+                NULL,
+                NULL,
+                NULL,
+                NULL,
+                #{address},
+                #{isDefault},
+                NULL,
+                now(),
+                #{createBy},
+                now(),
+                #{updateBy},
+                0,
+                '0'
+                );
+    </insert>
+
+    <delete id="deleteAddress" parameterType="long">
+        UPDATE t_customer_address
+        SET
+        `del_flag` = 2,
+        update_time = now()
+        WHERE `id` = #{id}
+    </delete>
+
+    <update id="updateAddress" parameterType="com.ruoyi.project.storage.domain.AddressVO">
+        UPDATE t_customer_address
+        SET `user_id` = #{userId},
+            `contacts` = #{contacts},
+            `contacts_phone` = #{contactsPhone},
+            `address` = #{address},
+            `is_default` = #{isDefault},
+            `update_time` = now(),
+            `update_by` = #{updateBy},
+            `version` = version + 1
+        WHERE `id` = #{id}
+        and `del_flag` = '0'
+
+    </update>
+
+    <select id="getListById" parameterType="long" resultType="com.ruoyi.project.storage.domain.AddressVO">
+        <include refid="selectAddress"></include>
+        where t.del_flag = 0
+        and t.id = #{id}
+    </select>
+
+    <update id="setAddressDefault" parameterType="long">
+        UPDATE t_customer_address
+        SET
+            `is_default` = 0,
+            `update_time` = now(),
+            `version` = version + 1
+        WHERE `id` = #{id}
+        and `del_flag` = '0'
+    </update>
+
+    <insert id="orderBox" parameterType="com.ruoyi.project.storage.domain.OrderEmptyBoxParamsVO">
+
+    </insert>
+
+</mapper>

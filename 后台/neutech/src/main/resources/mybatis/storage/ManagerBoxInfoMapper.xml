@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ruoyi.project.storage.mapper.ManagerBoxInfoMapper">
+    <sql id="selectSql">
+        select
+            t.box_standard boxStandard,
+            t.box_code boxCode,
+            t.box_unit_price boxUnitPrice,
+            t.used_by usedBy,
+            t.create_by createBy,
+            u.nick_name usedByName,
+            t.is_used isUsed,
+            t.create_time createTime,
+            t.update_time updateTime,
+            t.update_by updateBy,
+            t.version,
+            t.del_flag delFlag,
+            t.id,
+            t.remark
+        from t_box_info t
+    </sql>
+    <select id="getList" resultType="com.ruoyi.project.storage.domain.BoxInfoVO" parameterType="com.ruoyi.project.storage.domain.BoxInfoVO">
+        <include refid="selectSql"></include>
+        left join sys_user u
+        on t.used_by = u.user_id and u.del_flag = 0
+        where
+        t.del_flag = 0
+        <if test="boxStandard != null and boxStandard != ''">
+            and t.box_standard = #{boxStandard}
+        </if>
+        <if test="isUsed != null and isUsed != ''">
+            and t.is_used = #{isUsed}
+        </if>
+        <if test="usedByName != null and usedByName != ''">
+            and u.nick_name like concat(#{usedByName},'%')
+        </if>
+        order by t.update_time
+    </select>
+
+    <insert id="createBoxInfo" parameterType="com.ruoyi.project.storage.domain.BoxInfoVO">
+        insert into t_box_info(
+            box_standard,
+            box_unit_price,
+            remark,
+            box_code,
+            is_used,
+            create_time,
+            create_by,
+            update_time,
+            update_by,
+            version,
+            del_flag,
+            sort_no
+        )
+        values (
+            #{boxStandard},
+            #{boxUnitPrice},
+            #{remark},
+            #{boxCode},
+            #{isUsed},
+            now(),
+            #{createBy},
+            now(),
+            #{updateBy},
+            0,
+            0,
+            #{sortNo}
+        )
+    </insert>
+
+    <select id="findBoxInfo" resultType="java.lang.Integer">
+        select
+            count(*)
+        from t_box_info t
+        where t.del_flag = 0
+        and t.is_used = 1
+        and t.id in (
+            <foreach collection="ids" item="id" separator=",">
+                #{id}
+            </foreach>
+        )
+    </select>
+
+    <delete id="deleteBoxInfo">
+        update t_box_info
+        set del_flag = 2 , update_time = now() ,update_by = #{updateBy}
+        where id in (
+        <foreach collection="ids" item="id" separator=",">
+            #{id}
+        </foreach>
+        )
+    </delete>
+
+    <update id="freeOrderBox">
+        update t_box_info
+        set is_used = 0,
+            used_by = null,
+            update_time = now(),
+            version = version + 1
+        where
+            id = #{boxId}
+    </update>
+</mapper>

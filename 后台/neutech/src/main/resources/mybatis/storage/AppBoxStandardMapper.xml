@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ruoyi.project.storage.mapper.AppBoxStandardMapper">
+    <sql id="SelectOrder">
+        select
+            t.`id`,
+            t.`user_id` userId,
+            t.`status`,
+            `order_code` orderCode,
+            `order_name` orderName,
+            `empty_box_order_time` emptyBoxOrderTime,
+            `heavy_box_order_time` heavyBoxOrderTime,
+            `empty_box_call_name` emptyBoxCallName,
+            `empty_box_call_phone` emptyBoxCallPhone,
+            `empty_box_call_address` emptyBoxCallAddress,
+            `empty_box_call_time` emptyBoxCallTime,
+            `empty_box_call_interval` emptyBoxCallInterval,
+            `heavy_box_call_name` heavyBoxCallName,
+            `heavy_box_call_phone` heavyBoxCallPhone,
+            `heavy_box_call_address` heavyBoxCallAddress,
+            `heavy_box_call_time` heavyBoxCallTime,
+            `heavy_box_call_interval` heavyBoxCallInterval,
+            `box_id` boxId,
+            `box_code` boxCode,
+            `box_standard` boxStandard,
+            `box_unit_price` boxUnitPrice,
+            `lease_duration` leaseDuration,
+            `total_price` totalPrice,
+            t.`sort_no` sortNo,
+            t.`create_time` createTime,
+            t.`create_by` createBy,
+            t.`update_time` updateTime,
+            t.`update_by` updateBy,
+            t.`version`,
+            t.`del_flag` delFlag,
+            `app_del_flag` appDelFlag,
+            `backend_del_flag` backendDelFlag,
+            u.nick_name nickName
+    </sql>
+
+    <insert id="insertEmptyBoxOrder">
+        INSERT INTO t_order (
+            `user_id`,
+            `status`,
+            `order_code`,
+            `order_name`,
+            `empty_box_order_time`,
+            `heavy_box_order_time`,
+            `empty_box_call_name`,
+            `empty_box_call_phone`,
+            `empty_box_call_address`,
+            `empty_box_call_time`,
+            `empty_box_call_interval`,
+            `heavy_box_call_name`,
+            `heavy_box_call_phone`,
+            `heavy_box_call_address`,
+            `heavy_box_call_time`,
+            `heavy_box_call_interval`,
+            `box_id`,
+            `box_code`,
+            `box_standard`,
+            `box_unit_price`,
+            `lease_duration`,
+            `total_price`,
+            `sort_no`,
+            `create_time`,
+            `create_by`,
+            `update_time`,
+            `update_by`,
+            `version`,
+            `del_flag`,
+            `app_del_flag`,
+            `backend_del_flag`
+            )
+            VALUES
+                (
+                #{userId},
+                #{status},
+                #{orderCode},
+                #{orderName},
+                #{emptyBoxOrderTime},
+                null,
+                #{emptyBoxCallName},
+                #{emptyBoxCallPhone},
+                #{emptyBoxCallAddress},
+                #{emptyBoxCallTime},
+                #{emptyBoxCallInterval},
+                null,
+                null,
+                null,
+                null,
+                null,
+                #{boxId},
+                #{boxCode},
+                #{boxStandard},
+                #{boxUnitPrice},
+                #{leaseDuration},
+                #{totalPrice},
+                1,
+                now(),
+                #{createBy},
+                now(),
+                #{createBy},
+                0,
+                '0',
+                0,
+                0
+                );
+    </insert>
+
+    <select id="selectBoxStandard" resultType="com.ruoyi.project.storage.domain.BoxStandardSelectVO">
+        select
+            id,
+            box_standard boxStandard,
+            box_unit_price boxUnitPrice
+        from  t_box_standard t
+        where t.del_flag = 0
+    </select>
+
+    <select id="selectOrder" resultType="long">
+        select
+            id
+        from  t_order
+        where order_code = #{orderCode}
+
+    </select>
+
+    <update id="updateUsedBox">
+        UPDATE t_box_info
+        SET
+            `used_by` = #{userId},
+            `is_used` = 1,
+            `update_time` = now(),
+            `version` = version + 1
+        WHERE
+            `id` = #{id}
+        and `version` = #{version}
+
+    </update>
+
+    <update id="updateCurPoints">
+        UPDATE sys_user
+        SET
+            `update_time` = now(),
+            `current_points` = current_points - #{totalPrice},
+            `version` = version + 1
+        WHERE
+            `user_name` = #{username}
+    </update>
+
+    <select id="selectOrderByCode" parameterType="long" resultType="com.ruoyi.project.storage.domain.BackendOrderVO">
+            <include refid="SelectOrder"></include>
+            from t_order t
+            left join sys_user u
+            on t.user_id = u.user_id
+            and u.del_flag = 0
+            where t.del_flag = 0 and t.order_code = #{orderCode}
+    </select>
+
+
+</mapper>

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ruoyi.project.storage.mapper.ManagerCustomerMapper">
+
+    <select id="getList" parameterType="java.lang.String" resultType="com.ruoyi.project.storage.domain.CustomerVO">
+        select
+            u.user_id userId,
+            u.dept_id  deptId,
+            u.user_name  userName,
+            u.nick_name  nickName,
+            u.email,
+            u.phonenumber,
+            u.sex,
+            u.avatar,
+            u.password,
+            u.status,
+            u.del_flag delFlag,
+            u.login_ip loginIp,
+            u.login_date  loginDate,
+            u.create_by  createBy,
+            u.create_time  createTime,
+            u.update_by  updateBy,
+            u.update_time updateTime ,
+            u.remark,
+            u.current_points currentPoints ,
+            u.version,
+            u.user_type userType
+        from sys_user u
+        where u.user_type = '02'
+        and u.del_flag = '0'
+        <if test="searchValue != null">
+            and(
+            (u.nick_name like concat('%',#{searchValue},'%'))
+            or  (u.user_name like concat('%',#{searchValue},'%'))
+            or  (u.phonenumber like concat('%',#{searchValue},'%'))
+            or  (u.email like concat('%',#{searchValue},'%'))
+            )
+        </if>
+        order by u.user_id
+    </select>
+
+    <insert id="saveCustomer" parameterType="com.ruoyi.project.storage.domain.CustomerVO">
+        insert into sys_user(
+            user_name,
+            nick_name,
+            user_type,
+            phonenumber,
+            email,
+            sex,
+            password,
+            status,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark,
+            current_points,
+            version
+        )
+        values (
+            #{userName},
+            #{nickName},
+            '02',
+            #{phonenumber},
+            #{email},
+            #{sex},
+            #{password},
+            #{status},
+            #{delFlag},
+            #{createBy},
+            now(),
+            #{updateBy},
+            now(),
+            #{remark},
+            0,
+            #{version}
+        )
+    </insert>
+
+    <select id="findCustomerByUserName" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select count(*)
+        from sys_user
+        where del_flag = '0'
+        and user_name =#{userName}
+    </select>
+
+    <select id="findCustomerByPhone" resultType="java.lang.Integer" parameterType="java.lang.String">
+        select count(*)
+        from sys_user
+        where del_flag = '0'
+        and phonenumber =#{phonenumber}
+    </select>
+
+    <select id="findCustomerByEm" resultType="java.lang.Integer" parameterType="java.lang.String">
+        select count(*)
+        from sys_user
+        where del_flag = '0'
+        and email =#{email}
+    </select>
+
+    <select id="findCustomerByPhoneNum" resultType="java.lang.Integer" parameterType="com.ruoyi.project.storage.domain.CustomerVO">
+        select count(*)
+        from sys_user
+        where del_flag = '0'
+        and phonenumber = #{phonenumber}
+        and user_id != #{userId}
+    </select>
+
+    <select id="findCustomerByEmail" resultType="java.lang.Integer" parameterType="com.ruoyi.project.storage.domain.CustomerVO">
+        select count(*)
+        from sys_user
+        where del_flag = '0'
+        and email = #{email}
+        and user_id != #{userId}
+    </select>
+
+    <update id="updateCustomer" parameterType="com.ruoyi.project.storage.domain.CustomerVO">
+        update sys_user
+        set
+            user_name = #{userName},
+            email = #{email},
+            nick_name = #{nickName},
+            phonenumber = #{phonenumber},
+            sex = #{sex},
+            version = version+1,
+            update_by = #{updateBy},
+            update_time = now()
+        where user_id = #{userId}
+        and version = #{version}
+    </update>
+
+    <update id="deleteCustomer" parameterType="java.util.Map">
+        update sys_user
+        set
+            del_flag = '2' ,
+            update_time = now() ,
+            update_by = #{objectMap.updateBy}
+        where 1=1
+        <if test="userIds != null">
+            <foreach collection="userIds" item="user_id" open="and user_id in(" close=")" separator=",">
+                #{user_id}
+            </foreach>
+        </if>
+    </update>
+
+    <update id="enableStatus" parameterType="java.util.Map">
+        update sys_user
+        set
+            status = #{status},
+            update_time = now(),
+            update_by = #{updateBy}
+        where 1=1
+        <if test="userIds != null">
+            <foreach collection="userIds" item="user_id" open="and user_id in(" close=")" separator=",">
+                #{user_id}
+            </foreach>
+        </if>
+    </update>
+
+    <update id="resetPassword" parameterType="java.util.Map">
+        update sys_user
+        set
+        password = #{password},
+        update_time = now(),
+        update_by = #{updateBy}
+        where 1=1
+        <if test="userIds != null">
+            <foreach collection="userIds" item="user_id" open="and user_id in(" close=")" separator=",">
+                and user_id = #{user_id}
+            </foreach>
+        </if>
+    </update>
+</mapper>

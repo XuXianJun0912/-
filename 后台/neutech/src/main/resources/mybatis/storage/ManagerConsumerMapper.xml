@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ruoyi.project.storage.mapper.ManagerConsumerMapper">
+
+    <select id="getList" parameterType="com.ruoyi.project.storage.domain.ConsumerVO" resultType="com.ruoyi.project.storage.domain.ConsumerVO">
+        select
+        u.user_id userId,
+        u.dept_id  deptId,
+        u.user_name  userName,
+        u.nick_name  nickName,
+        u.email,
+        u.phonenumber,
+        u.sex,
+        u.avatar,
+        u.password,
+        u.status,
+        u.del_flag delFlag,
+        u.login_ip loginIp,
+        u.login_date  loginDate,
+        u.create_by  createBy,
+        u.create_time  createTime,
+        u.update_by  updateBy,
+        u.update_time updateTime ,
+        u.remark,
+        u.current_points currentPoints ,
+        u.version,
+        u.user_type userType
+        from sys_user u
+        where u.user_type = '01'
+        and u.del_flag = '0'
+        <if test="consumerVO !=null and consumerVO.searchValue != null">
+            and(
+            (u.nick_name like concat('%',#{consumerVO.searchValue},'%'))
+            or  (u.user_name like concat('%',#{consumerVO.searchValue},'%'))
+            or  (u.phonenumber like concat('%',#{consumerVO.searchValue},'%'))
+            or  (u.email like concat('%',#{consumerVO.searchValue},'%'))
+            )
+        </if>
+        order by u.user_id
+    </select>
+
+    <insert id="createConsumer" parameterType="com.ruoyi.project.storage.domain.ConsumerVO">
+        insert into sys_user(
+            user_name,
+            nick_name,
+            user_type,
+            phonenumber,
+            email,
+            sex,
+            password,
+            status,
+            del_flag,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            remark,
+            current_points,
+            version
+        )
+        values (
+            #{userName},
+            #{nickName},
+            '01',
+            #{phonenumber},
+            #{email},
+            #{sex},
+            #{password},
+            #{status},
+            #{delFlag},
+            #{createBy},
+            now(),
+            #{updateBy},
+            now(),
+            #{remark},
+            0,
+            #{version}
+        )
+    </insert>
+
+    <update id="updateConsumer" parameterType="com.ruoyi.project.storage.domain.ConsumerVO">
+        update sys_user
+        set
+            user_name = #{userName},
+            email = #{email},
+            nick_name = #{nickName},
+            phonenumber = #{phonenumber},
+            sex = #{sex},
+            version = version+1,
+            update_by = #{updateBy},
+            update_time = now()
+        where user_id = #{userId}
+        and version = #{version}
+    </update>
+
+    <update id="deleteConsumer" parameterType="java.util.Map">
+        update sys_user
+        set
+        del_flag = '2' ,
+        update_time = now() ,
+        update_by = #{objectMap.updateBy}
+        where 1=1
+        <if test="userIds != null">
+            <foreach collection="userIds" item="user_id" open="and user_id in(" close=")" separator=",">
+                #{user_id}
+            </foreach>
+        </if>
+    </update>
+
+    <update id="enableConsumer" parameterType="java.util.Map">
+        update sys_user
+        set
+        status = #{status},
+        update_time = now(),
+        update_by = #{updateBy}
+        where 1=1
+        <if test="userIds != null">
+            <foreach collection="userIds" item="user_id" open="and user_id in(" close=")" separator=",">
+                #{user_id}
+            </foreach>
+        </if>
+    </update>
+
+    <update id="resetPassword" parameterType="java.util.Map">
+        update sys_user
+        set
+        password = #{password},
+        update_time = now(),
+        update_by = #{updateBy}
+        where 1=1
+        <if test="userIds != null">
+            <foreach collection="userIds" item="user_id" open="and user_id in(" close=")" separator=",">
+                #{user_id}
+            </foreach>
+        </if>
+    </update>
+</mapper>
